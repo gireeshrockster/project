@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        #uploadForm {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="uploadForm">
+        <h2>Upload Image for Emotion Detection</h2>
+        <input type="file" id="imageInput" accept="image/*" />
+        <button onclick="uploadImage()">Upload</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function uploadImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            if (!file) {
+                alert('Please select an image.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('http://localhost:5000/detect_emotion', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(face => {
+                        const div = document.createElement('div');
+                        div.textContent = `Face at (${face.x}, ${face.y}) - Emotion: ${face.emotion}`;
+                        resultDiv.appendChild(div);
+                    });
+                } else {
+                    resultDiv.textContent = 'No faces detected or error occurred.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'An error occurred.';
+            });
+        }
+    </script>
+</body>
+</html>
